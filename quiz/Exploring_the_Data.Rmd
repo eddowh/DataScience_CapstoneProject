@@ -1,0 +1,127 @@
+---
+title: 'Quiz: Exploring the Data'
+author: "Eddo W. Hintoso"
+date: "October 21, 2015"
+output:
+  pdf_document: default
+  html_document:
+    highlight: zenburn
+    theme: readable
+---
+
+```{r, echo=FALSE, warning=FALSE, message=FALSE}
+# library(knitr)
+# opts_chunk$set(cache = TRUE)
+library(dplyr)
+```
+
+**1. After untaring the the dataset, how many files are there (including the documentation pdfs)?**
+
+7
+
+---
+
+**2. The data files are in what format?**
+
+`.json`
+
+---
+
+**3. How many lines of text are there in the reviews file (in orders of magnitude)?**
+
+```{r}
+yelpReviewRDS <- readRDS('../yelp_dataset_challenge_academic_dataset/yelp_academic_dataset_review.rds')
+dim(yelpReviewRDS)
+```
+
+One million
+
+---
+
+**4. Consider line 100 of the reviews file. “I’ve been going to the Grab n Eat for almost XXX years”**
+
+```{r}
+yelpReviewRDS$text[100]
+```
+
+20
+
+---
+
+**5. What percentage of the reviews are five star reviews (rounded to the nearest percentage point)?**
+
+```{r}
+100 * length(yelpReviewRDS$stars[yelpReviewRDS$stars == 5]) / length(yelpReviewRDS$stars)
+```
+
+37%
+
+---
+
+**6. How many lines are there in the businesses file?**
+
+```{r}
+yelpBusinessRDS <- readRDS('../yelp_dataset_challenge_academic_dataset/yelp_academic_dataset_business.rds')
+dim(yelpBusinessRDS)
+```
+
+About 60 thousand
+
+---
+
+**7. Conditional on having an response for the attribute "Wi-Fi", how many businesses are reported for having free wi-fi (rounded to the nearest percentage point)?**
+
+```{r}
+100 * length(na.omit(yelpBusinessRDS$`attributes.Wi-Fi`[yelpBusinessRDS$`attributes.Wi-Fi` == "free"])) / length(na.omit(yelpBusinessRDS$`attributes.Wi-Fi`))
+```
+
+40%
+
+---
+
+**8. How many lines are in the tip file?**
+
+```{r}
+yelpTipRDS <- readRDS('../yelp_dataset_challenge_academic_dataset/yelp_academic_dataset_tip.rds')
+dim(yelpTipRDS)
+```
+
+About 500 thousand
+
+---
+
+**9. In the tips file on the 1,000th line, fill in the blank: "Consistently terrible ______"**
+
+```{r}
+yelpTipRDS$text[1000]
+```
+
+service
+
+---
+
+**10. What is the name of the user with over 10,000 compliment votes of type "funny"?**
+
+```{r}
+yelpUserRDS <- readRDS('../yelp_dataset_challenge_academic_dataset/yelp_academic_dataset_user.rds')
+subset(yelpUserRDS, compliments.funny > 10000)$name
+```
+
+Brian
+
+---
+
+**11. Create a 2 by 2 cross tabulation table of when a user has more than 1 fans to if the user has more than 1 compliment of type "funny". Treat missing values as 0 (fans or votes of that type). Pass the 2 by 2 table to fisher.test in R. What is the P-value for the test of independence?**
+
+```{r}
+yelpUserRDS$compliments.funny[is.na(yelpUserRDS$compliments.funny)] <- 0
+yelpUserRDS$fans[is.na(yelpUserRDS$fans)] <- 0
+cross.table <- matrix(c(sum(yelpUserRDS$compliments.funny > 1),
+                        sum(yelpUserRDS$compliments.funny <= 1),
+                        sum(yelpUserRDS$fans > 1),
+                        sum(yelpUserRDS$fans <= 1)),
+                      nrow = 2)
+fisher.test(cross.table)
+```
+
+less than .001
